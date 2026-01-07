@@ -7,12 +7,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\OrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Repositories\OrderRepository;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     public function __construct(public OrderRepository $repo) {}
 
+    /**
+     * @LRDparam page integer|default:1
+     * @LRDparam per_page nullable|integer|default:10
+     * @LRDparam sort_by nullable|string|default:created_at
+     * @LRDparam sort_order nullable|string|in:asc,desc|default:desc
+     * @LRDparam user_id nullable|integer|default:auth()->id()
+     * @LRDparam status nullable|string|in:pending,confirmed,cancelled
+     */
     public function index()
     {
         $orders = $this->repo->paginate(request()->all());

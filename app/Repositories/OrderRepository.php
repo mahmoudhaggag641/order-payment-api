@@ -18,6 +18,9 @@ class OrderRepository extends BaseRepository
     public function query($query, array $params = [])
     {
         $status = gv($params, 'status');
+        $user_id = (int) (gv($params, 'user_id') ?? auth()->id());
+
+        $query->where('user_id', $user_id);
 
         $query->when($status, function ($q, $status) {
             $q->where('status', $status);

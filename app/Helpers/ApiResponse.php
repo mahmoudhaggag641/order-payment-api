@@ -39,4 +39,9 @@ final class ApiResponse
     {
         return self::error($message, Response::HTTP_UNPROCESSABLE_ENTITY, $errors);
     }
+
+    public static function unauthorized(string $message = 'Unauthorized'): JsonResponse
+    {
+        return self::error($message, Response::HTTP_UNAUTHORIZED);
+    }
 }
