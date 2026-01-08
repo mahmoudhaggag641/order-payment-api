@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests\Api\Order;
 
 use App\Helpers\ApiResponse;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class OrderRequest extends FormRequest
+class UpdateOrderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,11 +25,11 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'items' => ['required', 'array', 'min:1'],
+            'items' => ['sometimes', 'array', 'min:1'],
             'items.*.id' => ['sometimes', 'exists:order_items,id'],
-            'items.*.product_name' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:1000'],
-            'items.*.price' => ['required', 'numeric', 'min:' . config('payment.validation_rules.min_amount'), 'max:' . config('payment.validation_rules.max_amount')],
+            'items.*.product_name' => ['required_with:items', 'string', 'max:255'],
+            'items.*.quantity' => ['required_with:items', 'integer', 'min:1', 'max:1000'],
+            'items.*.price' => ['required_with:items', 'numeric', 'min:0.01', 'max:999999.99'],
             'metadata' => ['nullable', 'array'],
         ];
     }

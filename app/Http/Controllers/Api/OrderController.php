@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\OrderRequest;
+use App\Http\Requests\Api\Order\StoreOrderRequest;
+use App\Http\Requests\Api\Order\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Repositories\OrderRepository;
 
@@ -27,7 +28,7 @@ class OrderController extends Controller
         return ApiResponse::success($orders, 'Orders retrieved successfully');
     }
 
-    public function store(OrderRequest $request)
+    public function store(StoreOrderRequest $request)
     {
         $order = $this->repo->create($request->all());
 
@@ -41,13 +42,13 @@ class OrderController extends Controller
         return ApiResponse::success(new OrderResource($order), 'Order retrieved successfully');
     }
 
-    public function update(OrderRequest $request, string $id)
+    public function update(UpdateOrderRequest $request, string $id)
     {
         $order = $this->repo->findByUuid($id);
 
         $updated = $this->repo->update($order, $request->all());
 
-        ApiResponse::success($updated, 'Order updated successfully');
+        return ApiResponse::success(new OrderResource($order->fresh()), 'Order updated successfully');
     }
 
     public function destroy(string $id)

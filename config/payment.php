@@ -16,10 +16,4 @@ return [
             'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         ],
     ],
-
-    'validation_rules' => [
-        'min_amount' => 0.01,
-        'max_amount' => 100000,
-        'allowed_currencies' => ['USD'],
-    ],
 ];

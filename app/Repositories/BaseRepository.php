@@ -23,7 +23,7 @@ abstract class BaseRepository
 
     public function findById($id)
     {
-        $model = $this->model->info()->where('id', $id)->first();
+        $model = $this->model->query()->info()->where('id', $id)->first();
 
         if (!$model) {
             throw new HttpResponseException(ApiResponse::notFound());
@@ -34,7 +34,7 @@ abstract class BaseRepository
 
     public function findByUuid($uuid)
     {
-        $model = $this->model->info()->where('uuid', $uuid)->first();
+        $model = $this->model->query()->info()->where('uuid', $uuid)->first();
 
         if (!$model) {
             throw new HttpResponseException(ApiResponse::notFound());

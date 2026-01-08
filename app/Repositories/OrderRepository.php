@@ -55,7 +55,7 @@ class OrderRepository extends BaseRepository
 
     public function canDelete($order)
     {
-        if (! $order->canBeDeleted()) {
+        if ($order->payments()->exists()) {
             throw new HttpResponseException(ApiResponse::error('Cannot delete order with associated payments'));
         }
     }

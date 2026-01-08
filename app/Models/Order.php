@@ -55,11 +55,6 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function canBeDeleted(): bool
-    {
-        return $this->payments()->doesntExist();
-    }
-
     public function canProcessPayment(): bool
     {
         return $this->status->canProcessPayment();
@@ -77,7 +72,7 @@ class Order extends Model
     #[Scope]
     public function info($query)
     {
-        return $query->with('user:id,name,email', 'items:id,product_name,quantity,price');
+        return $query->with('user:id,name,email', 'items:id,order_id,product_name,quantity,price');
     }
 
     #[Scope]
