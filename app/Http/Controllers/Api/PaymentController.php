@@ -2,16 +2,37 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\PaymentStatus;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\PaymentRequest;
 use App\Repositories\OrderRepository;
+use App\Repositories\PaymentRepository;
 use App\Services\Payment\PaymentService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function __construct(public OrderRepository $orderRepo) {}
+    public function __construct(
+        public PaymentRepository $repo,
+        public OrderRepository $orderRepo
+    ) {}
+
+    /**
+     * @LRDparam page integer|default:1
+     * @LRDparam per_page nullable|integer|default:10
+     * @LRDparam sort_by nullable|string|default:created_at
+     * @LRDparam sort_order nullable|string|in:asc,desc|default:desc
+     * @LRDparam user_id nullable|integer|default:auth()->id()
+     * @LRDparam order_id nullable|integer|exists:orders,id
+     * @LRDparam status nullable|string|in:pending,successful,failed
+     */
+    public function index()
+    {
+        $payments = $this->repo->paginate(request()->all());
+
+        return ApiResponse::success($payments, 'Payments retrieved successfully');
+    }
 
     public function charge(PaymentRequest $request)
     {
@@ -39,16 +60,20 @@ class PaymentController extends Controller
 
         $payment = $paymentService->handleWebhook($request);
 
+        $payment->refresh();
+        if ($payment->status == PaymentStatus::SUCCESSFUL) {
+            // Send confirm email or notification
+        }
+
         return ApiResponse::success($payment, 'Webhook processed successfully');
     }
 
-    public function success(Request $request)
+    public function redirect($status, $id = null)
     {
-        return ApiResponse::success(true, 'Payment successful');
-    }
-
-    public function cancel(Request $request)
-    {
-        return ApiResponse::error('Payment canceled');
+        if ($status == 'success') {
+            return ApiResponse::success(true, 'Payment successful');
+        } else {
+            return ApiResponse::error('Payment canceled');
+        }
     }
 }

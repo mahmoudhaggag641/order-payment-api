@@ -150,8 +150,8 @@ class PayPal implements PaymentGatewayInterface
                         'landing_page' => 'LOGIN',
                         'shipping_preference' => 'NO_SHIPPING',
                         'user_action' => 'PAY_NOW',
-                        'return_url' => $data['return_url'] ?? $this->config['return_url'],
-                        'cancel_url' => $data['cancel_url'] ?? $this->config['cancel_url'],
+                        'return_url' => $data['return_url'] ?? route('payment.redirect', ['status' => 'success', 'id' => $payment->uuid]),
+                        'cancel_url' => $data['cancel_url'] ?? route('payment.redirect', ['status' => 'cancel', 'id' => $payment->uuid]),
                     ]
                 ]
             ]

@@ -70,6 +70,12 @@ class Payment extends Model
     }
 
     #[Scope]
+    public function summary($query)
+    {
+        return $query;
+    }
+
+    #[Scope]
     public function status($query, PaymentStatus $status)
     {
         return $query->where('status', $status->value);

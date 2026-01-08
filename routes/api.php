@@ -12,13 +12,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::apiResource('orders', OrderController::class)->parameter('orders', 'uuid');
     Route::post('orders/status/{uuid}', [OrderController::class, 'status']);
 
+    Route::get('payments', [PaymentController::class, 'index']);
     Route::post('payment/charge', [PaymentController::class, 'charge']);
 });
 
 Route::prefix('payment')->group(function () {
-    Route::get('/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::get('/redirect/{status}/{id?}', [PaymentController::class, 'redirect'])->name('payment.redirect');
 
     // Webhook endpoint
-    Route::post('/{gateway}', [PaymentController::class, 'webhook']);
+    Route::post('/{gateway}/webhook', [PaymentController::class, 'webhook']);
 });

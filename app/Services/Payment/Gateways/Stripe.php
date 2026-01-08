@@ -39,8 +39,8 @@ class Stripe implements PaymentGatewayInterface
             'payment_method_types' => ['card'],
             'line_items' => $this->formatLineItems($order),
             'mode' => 'payment',
-            'success_url' => $data['success_url'] ?? route('payment.success'),
-            'cancel_url' => $data['cancel_url'] ?? route('payment.cancel'),
+            'success_url' => $data['success_url'] ?? route('payment.redirect', ['status' => 'success', 'id' => $payment->uuid]),
+            'cancel_url' => $data['cancel_url'] ?? route('payment.redirect', ['status' => 'cancel', 'id' => $payment->uuid]),
             'client_reference_id' => $payment->uuid,
             'metadata' => [
                 'order_uuid' => $order->uuid,

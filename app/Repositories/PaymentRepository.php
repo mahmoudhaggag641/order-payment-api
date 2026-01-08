@@ -19,7 +19,9 @@ class PaymentRepository extends BaseRepository
         $order_id = gv($params, 'order_id');
         $user_id = (int) (gv($params, 'user_id') ?? auth()->id());
 
-        $query->where('user_id', $user_id);
+        $query->whereHas('order', function ($q) use ($user_id) {
+            $q->where('user_id', $user_id);
+        });
 
         $query->when($status, function ($q, $status) {
             $q->where('status', $status);
