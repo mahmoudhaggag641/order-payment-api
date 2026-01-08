@@ -26,8 +26,13 @@ The system uses Strategy Pattern for payment gateways. To add a new gateway:
 
 You can view the API documentation by.
 
-1. Visiting `http://localhost:8000/request-docs` or
-2. The `order_payment_api.json` file in the root of the repository is exported from previous step/page by clicking on `OpenAPI 3.0` button.
+1. You can visit the following URL in your local environment to see and test all endpoints:
+
+    👉 [http://localhost/request-docs](http://localhost/request-docs)
+
+    ![Request Docs](public/assets/screens/request-docs.png)
+
+2. Or The `order_payment_api.json` file in the root of the repository is exported from previous step/page by clicking on `OpenAPI 3.0` button.
 3. And you can Import `order_payment_api.json` into Postman or any other tool.
 
 ## Testing
