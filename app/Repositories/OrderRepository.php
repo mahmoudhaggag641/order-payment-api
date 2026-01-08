@@ -10,9 +10,9 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class OrderRepository extends BaseRepository
 {
-    public function __construct(Order $order)
+    public function __construct()
     {
-        parent::__construct($order);
+        parent::__construct(new Order());
     }
 
     public function query($query, array $params = [])
@@ -72,5 +72,11 @@ class OrderRepository extends BaseRepository
                 $order->items()->create($itemData);
             }
         }
+    }
+
+    public function updateStatus(Order $order, $status)
+    {
+        $order->status = $status;
+        $order->save();
     }
 }

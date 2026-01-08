@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository extends BaseRepository
 {
-    public function __construct(User $user)
+    public function __construct()
     {
-        parent::__construct($user);
+        parent::__construct(new User());
     }
 
     public function findByEmail($email)

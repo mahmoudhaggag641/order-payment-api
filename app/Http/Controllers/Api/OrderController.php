@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Order\StatusOrderRequest;
 use App\Http\Requests\Api\Order\StoreOrderRequest;
 use App\Http\Requests\Api\Order\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
@@ -58,5 +59,14 @@ class OrderController extends Controller
         $this->repo->delete($order);
 
         return ApiResponse::success(true, 'Order deleted successfully');
+    }
+
+    public function status(StatusOrderRequest $request, string $id)
+    {
+        $order = $this->repo->findByUuid($id);
+
+        $this->repo->updateStatus($order, $request->status);
+
+        return ApiResponse::success(true, 'Order status updated successfully');
     }
 }

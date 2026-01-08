@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests\Api\Order;
 
+use App\Enums\OrderStatus;
 use App\Helpers\ApiResponse;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class PaymentRequest extends FormRequest
+class StatusOrderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,9 +26,7 @@ class PaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'order_id' => ['required', 'exists:orders,uuid'],
-            'gateway' => ['required', 'string', 'in:' . implode(',', array_keys(config('payment.gateways')))],
-            'metadata' => ['nullable', 'array'],
+            'status' => ['required', 'string', 'in:' . implode(',', OrderStatus::values())],
         ];
     }
 
