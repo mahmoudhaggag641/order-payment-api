@@ -4,7 +4,6 @@ namespace App\Services\Payment\Gateways;
 
 use App\Models\Order;
 use App\Models\Payment;
-use App\Repositories\PaymentRepository;
 use App\Services\Payment\PaymentGatewayInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -13,50 +12,28 @@ class PayPal implements PaymentGatewayInterface
 {
     private string $baseUrl;
     private string $accessToken;
-    private PaymentRepository $repo;
     private array $config;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $this->config = config('payment.gateways.paypal.config', []);
-        $this->baseUrl = $this->config['mode'] === 'sandbox'
-            ? 'https://api-m.sandbox.paypal.com'
-            : 'https://api-m.paypal.com';
-
-        $this->repo = new PaymentRepository();
+        $this->config = $config;
+        $this->baseUrl = ($this->config['mode'] === 'sandbox') ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
 
         $this->authenticate();
     }
 
-    public function checkout(Order $order, array $data): array
+    public function checkout(Payment $payment, array $data): array
     {
-        // Create payment record
-        $payment = $this->repo->create([
-            'order_id' => $order->id,
-            'amount' => $order->total,
-            'gateway' => 'paypal',
-        ]);
-
         // Create PayPal order
-        $paypalOrder = $this->createPayPalOrder($order, $payment, $data);
-
-        // Update payment with PayPal data
-        $payment->update([
-            'gateway_response' => [
-                'paypal_order_id' => $paypalOrder['id'],
-                'paypal_data' => $paypalOrder
-            ]
-        ]);
+        $paypalOrder = $this->createPayPalOrder($payment->order, $payment, $data);
 
         // Find approval URL
-        $approveUrl = collect($paypalOrder['links'])
-            ->where('rel', 'approve')
-            ->first()['href'];
+        $approveUrl = collect($paypalOrder['links'])->where('rel', 'approve')->first()['href'];
 
         return [
-            'order_id' => $paypalOrder['id'],
-            'approval_url' => $approveUrl,
-            'payment_uuid' => $payment->uuid,
+            'id' => $paypalOrder['id'],
+            'url' => $approveUrl,
+            'data' => $paypalOrder,
         ];
     }
 
@@ -187,23 +164,18 @@ class PayPal implements PaymentGatewayInterface
             throw new \Exception('Payment UUID not found in PayPal event');
         }
 
-        $payment = $this->repo->findByUuid($paymentUuid);
+        $payment = Payment::where('uuid', $paymentUuid)->firstOrFail();
+        $response = array_merge($payment->gateway_response ?? [], ['paypal_event' => $event]);
 
         switch ($event['event_type']) {
             case 'CHECKOUT.ORDER.APPROVED':
             case 'PAYMENT.CAPTURE.COMPLETED':
-                $payment->markAsSuccessful(array_merge(
-                    $payment->gateway_response ?? [],
-                    ['paypal_event' => $event]
-                ));
+                $payment->markAsSuccessful($response);
                 break;
 
             case 'CHECKOUT.ORDER.VOIDED':
             case 'PAYMENT.CAPTURE.DENIED':
-                $payment->markAsFailed(array_merge(
-                    $payment->gateway_response ?? [],
-                    ['paypal_event' => $event]
-                ));
+                $payment->markAsFailed($response);
                 break;
         }
 

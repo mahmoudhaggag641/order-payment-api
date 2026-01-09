@@ -4,7 +4,6 @@ namespace App\Services\Payment\Gateways;
 
 use App\Models\Order;
 use App\Models\Payment;
-use App\Repositories\PaymentRepository;
 use App\Services\Payment\PaymentGatewayInterface;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,52 +13,36 @@ use Stripe\Webhook;
 
 class Stripe implements PaymentGatewayInterface
 {
-    private StripeClient $stripe;
-    private PaymentRepository $repo;
     private array $config;
+    private StripeClient $stripe;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $this->config = config('payment.gateways.stripe.config', []);
+        $this->config = $config;
         $this->stripe = new StripeClient($this->config['secret']);
-        $this->repo = new PaymentRepository();
     }
 
-    public function checkout(Order $order, array $data): array
+    public function checkout(Payment $payment, array $data): array
     {
-        // Create payment record
-        $payment = $this->repo->create([
-            'order_id' => $order->id,
-            'amount' => $order->total,
-            'gateway' => 'stripe',
-        ]);
-
         // Create Stripe checkout session
         $session = $this->stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],
-            'line_items' => $this->formatLineItems($order),
+            'line_items' => $this->formatLineItems($payment->order),
             'mode' => 'payment',
             'success_url' => $data['success_url'] ?? route('payment.redirect', ['status' => 'success', 'id' => $payment->uuid]),
             'cancel_url' => $data['cancel_url'] ?? route('payment.redirect', ['status' => 'cancel', 'id' => $payment->uuid]),
             'client_reference_id' => $payment->uuid,
             'metadata' => [
-                'order_uuid' => $order->uuid,
+                'order_uuid' => $payment->order->uuid,
                 'payment_uuid' => $payment->uuid,
             ],
             'currency' => $this->config['currency'] ?? 'usd',
         ]);
 
-        $payment->update([
-            'gateway_response' => [
-                'session_id' => $session->id,
-                'session_data' => $session->toArray()
-            ]
-        ]);
-
         return [
-            'session_id' => $session->id,
+            'id' => $session->id,
             'url' => $session->url,
-            'payment_uuid' => $payment->uuid,
+            'data' => $session->toArray(),
         ];
     }
 
@@ -113,33 +96,23 @@ class Stripe implements PaymentGatewayInterface
 
     private function handleStripeEvent(array $event): Payment
     {
+        $response = array_merge($payment->gateway_response ?? [], ['stripe_event' => $event]);
+
         switch ($event['type']) {
             case 'checkout.session.completed':
                 $session = $event['data']['object'];
-                $payment = $this->repo->findByUuid($session['client_reference_id']);
+                $payment = Payment::where('uuid', $session['client_reference_id'])->firstOrFail();
 
-                if ($session['payment_status'] === 'paid') {
-                    $payment->markAsSuccessful(array_merge(
-                        $payment->gateway_response ?? [],
-                        ['stripe_event' => $event]
-                    ));
-                }
-
-                return $payment;
-
+                if ($session['payment_status'] === 'paid') $payment->markAsSuccessful($response);
+                break;
             case 'checkout.session.expired':
                 $session = $event['data']['object'];
-                $payment = $this->repo->findByUuid($session['client_reference_id']);
+                $payment = Payment::where('uuid', $session['client_reference_id'])->firstOrFail();
 
-                $payment->markAsFailed(array_merge(
-                    $payment->gateway_response ?? [],
-                    ['stripe_event' => $event]
-                ));
-
-                return $payment;
-
-            default:
-                throw new \Exception('Unhandled event type');
+                $payment->markAsFailed($response);
+                break;
         }
+
+        return $payment;
     }
 }

@@ -25,6 +25,7 @@ class PaymentResource extends JsonResource
             ],
             'gateway' => $this->gateway,
             'metadata' => $this->metadata,
+            // 'gateway_response' => $this->when(isset($this->gateway_response), $this->gateway_response),
             'processed_at' => $this->when(isset($this->processed_at), toDateTime($this->processed_at)),
             'created_at' => $this->when(isset($this->created_at), toDateTime($this->created_at)),
             'updated_at' => $this->when(isset($this->updated_at), toDateTime($this->updated_at)),

@@ -56,4 +56,10 @@ class PaymentRepository extends BaseRepository
     public function setRelations($payment, array $params) {}
 
     public function canDelete($payment) {}
+
+    public function updateGatewayResponse($payment, $response)
+    {
+        $payment->gateway_response = $response;
+        $payment->save();
+    }
 }

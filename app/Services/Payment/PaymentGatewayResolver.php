@@ -22,7 +22,7 @@ class PaymentGatewayResolver
             throw new InvalidArgumentException("Payment gateway class '{$gatewayClass}' does not exist.");
         }
 
-        return new $gatewayClass();
+        return new $gatewayClass($gatewayConfig['config'] ?? []);
     }
 
     public static function getAvailableGateways(): array
