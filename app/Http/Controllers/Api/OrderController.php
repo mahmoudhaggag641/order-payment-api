@@ -33,6 +33,8 @@ class OrderController extends Controller
     {
         $order = $this->repo->create($request->all());
 
+        $order->load('items');
+
         return ApiResponse::created(new OrderResource($order), 'Order created successfully');
     }
 

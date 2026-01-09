@@ -13,7 +13,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('orders/status/{uuid}', [OrderController::class, 'status']);
 
     Route::get('payments', [PaymentController::class, 'index']);
-    Route::post('payment/charge', [PaymentController::class, 'charge']);
+    Route::post('payment/checkout', [PaymentController::class, 'checkout']);
 });
 
 Route::prefix('payment')->group(function () {

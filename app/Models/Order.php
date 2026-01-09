@@ -72,13 +72,15 @@ class Order extends Model
     #[Scope]
     public function info($query)
     {
-        return $query->with('user:id,name,email', 'items:id,order_id,product_name,quantity,price');
+        // return $query->with('user:id,name,email', 'items:id,order_id,product_name,quantity,price');
+        return $query->with('items:id,order_id,product_name,quantity,price');
     }
 
     #[Scope]
     public function summary($query)
     {
-        return $query->with('user:id,name,email')->withCount('items');
+        // return $query->with('user:id,name,email')->withCount('items');
+        return $query->withCount('items');
     }
 
     #[Scope]

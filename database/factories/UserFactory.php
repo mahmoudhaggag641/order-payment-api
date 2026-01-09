@@ -41,4 +41,11 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function withOrders(int $count = 3): static
+    {
+        return $this->afterCreating(function ($user) use ($count) {
+            \App\Models\Order::factory($count)->create(['user_id' => $user->id]);
+        });
+    }
 }

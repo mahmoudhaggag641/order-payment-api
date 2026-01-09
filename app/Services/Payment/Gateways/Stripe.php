@@ -25,7 +25,7 @@ class Stripe implements PaymentGatewayInterface
         $this->repo = new PaymentRepository();
     }
 
-    public function charge(Order $order, array $data): array
+    public function checkout(Order $order, array $data): array
     {
         // Create payment record
         $payment = $this->repo->create([

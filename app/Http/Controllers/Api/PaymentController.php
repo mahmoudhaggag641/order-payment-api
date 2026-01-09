@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\PaymentStatus;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\PaymentRequest;
@@ -34,7 +33,7 @@ class PaymentController extends Controller
         return ApiResponse::success($payments, 'Payments retrieved successfully');
     }
 
-    public function charge(PaymentRequest $request)
+    public function checkout(PaymentRequest $request)
     {
         try {
             $order = $this->orderRepo->findByUuid($request->order_id);
@@ -46,9 +45,9 @@ class PaymentController extends Controller
 
             $paymentService = new PaymentService($request->gateway);
 
-            $result = $paymentService->charge($order, $request->all());
+            $result = $paymentService->checkout($order, $request->all());
 
-            return ApiResponse::success($result, 'Payment initiated successfully');
+            return ApiResponse::created($result, 'Payment initiated successfully');
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage());
         }
@@ -59,11 +58,6 @@ class PaymentController extends Controller
         $paymentService = new PaymentService($gateway);
 
         $payment = $paymentService->handleWebhook($request);
-
-        $payment->refresh();
-        if ($payment->status == PaymentStatus::SUCCESSFUL) {
-            // Send confirm email or notification
-        }
 
         return ApiResponse::success($payment, 'Webhook processed successfully');
     }

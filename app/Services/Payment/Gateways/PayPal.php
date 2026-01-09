@@ -28,7 +28,7 @@ class PayPal implements PaymentGatewayInterface
         $this->authenticate();
     }
 
-    public function charge(Order $order, array $data): array
+    public function checkout(Order $order, array $data): array
     {
         // Create payment record
         $payment = $this->repo->create([

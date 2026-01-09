@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 interface PaymentGatewayInterface
 {
     /**
-     * Charge the order
+     * Create checkout the order
      */
-    public function charge(Order $order, array $data): array;
+    public function checkout(Order $order, array $data): array;
 
     /**
      * Verify webhook signature and
